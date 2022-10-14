@@ -152,61 +152,6 @@ module wall_mount() {
         }
 }
 
-/*]
-module helper1() {
-intersection() {
-difference() {
-    hanger(wall_mount_radius_fudge+4);
-    scale([1, 1.01, 1]) hanger(wall_mount_radius_fudge+1);
-}
-translate([0, 0, 25]) cube([50, 50, 50], center=true);
-}
-
-translate([-(50/2+wall_mount_radius_fudge+4), 0, wall_mount_span_z/2])
-
-cube([50-(wall_mount_span_x/2+wall_mount_radius_fudge+4), wall_mount_span_y, 4], center=true);
-
-translate([-58, -5, 10])
-union() {
-translate([0, -5, 0])
-cube([3, 20, 20], center=true);
-
-rotate([0, 0, 90])
-    translate([5, -3.5, 0])
-cube([3, 10, 20], center=true);
-}
-
-difference() {
-    by = 15;
-    bz = 40;
-    union() {
-        //translate([1, 0, 0]) cube([62, 2, 10], center=true);
-        translate([62-3, 0, 0]) rotate([90, 0, 0])
-            cylinder(h=2, r=4, center=true);
-        
-        translate([62/2, 0, 0])
-        cube([62, 2, 4], center=true);
-
-        translate([0, -(by/2-2/2), 0])
-        cube([2, by, bz], center=true);
-    }
-    
-    translate([62-3, 0, 0])
-    rotate([90, 0, 0])
-    #cylinder(h=50, r=1.5, center=true, $fn=16);
-    
-    translate([0, -8, 0])
-    #cube([10, 12+epsilon, bz-6*2], center=true);
-}
-
-module guide() {
-    reflect_z() translate([0, 0, -40]) helper1();
-    cube([3, 3, 36], center=true);
-    //translate([-51, 0, 0]) cube([3, 3, 42], center=true);
-}
-
-//guide();
-*/
 // Used to cut off excess so it can lay flat on the printbed.
 module flush_intersect() {
     translate([0, 0, 250-uc_span_z/2])
