@@ -7,6 +7,7 @@ body_to_wheel_width=2;
 rear_to_axle = 35;
 axle_width = body_width+2*(wheel_width+body_to_wheel_width);
 axle_radius = 1.25;
+axle_notch_radius = 2.5;
 back_flat_width = 10;
 back_flat_length = 40;
 back_cube_length = 10;
@@ -21,12 +22,12 @@ car_front_axle = 112;
 
 
 // Undercarriage
-uc_length = 60;
+uc_length = 40;
 uc_width = 10;
 uc_height = 2;
 
 // Side support at axle.
-ssa_radius = 5;
+ssa_radius = 7;
 ssa_depth = 1;
 ssa_base_length = ssa_radius*2;
 ssa_width = body_width;
@@ -113,8 +114,16 @@ module debug_wheels() {
 }
 
 module uc_bracket() {
-    translate([-(body_width/2-uc_width/2), uc_length/2, 0]) {
+    //translate([-(body_width/2-uc_width/2), uc_length/2, 0]) {
+    translate([0, uc_length/2, 0]) {
         uc_base();
+    }
+}
+
+module axle_slot_neg() {
+    hull() {
+        translate([0, -10, uc_height+0.]) axle_notch();
+        translate([0, 0, uc_height+0.]) axle_notch();
     }
 }
 
@@ -122,8 +131,12 @@ module ssa() {
     intersection() {
         translate([0, 0, ssa_radius])
             cube([ssa_depth, ssa_radius*2, ssa_radius*2], center=true);
-        rotate([0, 90, 0])
-            cylinder(r = ssa_radius, h=ssa_depth, center=true);
+        mink_it(0.5) difference() {
+            rotate([0, 90, 0])
+                cylinder(r = ssa_radius, h=epsilon, center=true);
+            axle_slot_neg();
+    
+       }
     }
 }
 
@@ -135,12 +148,11 @@ module ssa_base() {
     }
 }
 
-module axle_slot_neg() {
-    hull() {
-        translate([0, 0, 10]) axle();
-        translate([0, 0, uc_height+0.5]) axle();
-    }
+module axle_notch() {
+    translate([-(axle_width/2), 0, 0])
+    rotate([0, 90, 0]) cylinder(h=axle_width, r=axle_notch_radius, $fn=16);
 }
+
 
 module ssa_bracket() {
     difference() {
@@ -150,7 +162,6 @@ module ssa_bracket() {
                 translate([body_width/2-ssa_depth/2, 0, 0])
                     ssa();
         }
-        axle_slot_neg();
     }
 }
 
@@ -165,15 +176,12 @@ module back_bracket() {
     }
 }
 
-
 module car_bracket() {
-    #debug_wheels();
+    //#debug_wheels();
     ssa_bracket();
     uc_bracket();
     back_bracket();
 }
-
-
 
 module screw_mount_neg() {
     translate([0, -50, 0]) cube([100, 100, 100], center=true);
@@ -225,3 +233,4 @@ module wall_bracket() {
 }
 
 wall_bracket();
+//car_bracket();
