@@ -80,14 +80,6 @@ module reflect_xyz() {
 }
 
 
-module mink_it(sphere_r) {
-    $fn=16;
-    minkowski() {
-        children(0);
-        sphere(r=sphere_r);
-    }
-}
-
 module wheel() {
     translate([-(wheel_width/2), 0, 0])
     rotate([0, 90, 0]) cylinder(h=wheel_width, r=15);
