@@ -1,13 +1,12 @@
 epsilon = 0.001;
 
 // Dimensions
-body_width=46;
+body_width=52;
 wheel_width=10;
 body_to_wheel_width=2;
 rear_to_axle = 35;
 axle_width = body_width+2*(wheel_width+body_to_wheel_width);
 axle_radius = 1.25;
-axle_notch_radius = 2.5;
 back_flat_width = 10;
 back_flat_length = 40;
 back_cube_length = 10;
@@ -22,25 +21,24 @@ car_front_axle = 112;
 
 
 // Undercarriage
-uc_length = 40;
+uc_length = 60;
 uc_width = 10;
-uc_height = 6;
+uc_height = 2;
 
 // Side support at axle.
-ssa_radius = 7;
+ssa_radius = 5;
 ssa_depth = 1;
 ssa_base_length = ssa_radius*2;
 ssa_width = body_width;
 
 
-screw_head_radius = 4;
+screw_head_radius = 3;
 screw_head_height = 4;
 screw_head_fudge = 0.2;
 screw_hole_radius = 1.5;
-screw_hole_fudge = [0, -3, 7];
 
 screw_mount_depth = 1;
-screw_mount_height = 8;
+screw_mount_height = 5;
 screw_mount_radius_fudge = 0.2;
 
 
@@ -71,10 +69,6 @@ module reflect_xy() {
     reflect_x() reflect_y() children(0);
 }
 
-
-module reflect_yz() {
-    reflect_y() reflect_z() children(0);
-}
 
 module reflect_xyz() {
     reflect_z() reflect_y() reflect_x() children(0);
@@ -119,31 +113,17 @@ module debug_wheels() {
 }
 
 module uc_bracket() {
-    //translate([-(body_width/2-uc_width/2), uc_length/2, 0]) {
-    translate([0, uc_length/2, 0]) {
+    translate([-(body_width/2-uc_width/2), uc_length/2, 0]) {
         uc_base();
     }
 }
 
-module axle_slot_neg(r) {
-    hull() {
-        translate([0, -10, 0]) axle_notch(r);
-        axle_notch(r);
-    }
-}
-
 module ssa() {
-    mink_it(0.5) difference() {
-        // translate([0, 0, ssa_radius])
-        //    cube([ssa_depth, ssa_radius*2, ssa_radius*2], center=true);
-        intersection() {
-            cube([epsilon, ssa_base_length-2, 10], center=true);
-            axle_slot_neg(6);
-            translate([0, 0, 50-uc_height/2])
-                cube([100, 100, 100], center = true);
-        }
-        axle_slot_neg(axle_notch_radius);
-        
+    intersection() {
+        translate([0, 0, ssa_radius])
+            cube([ssa_depth, ssa_radius*2, ssa_radius*2], center=true);
+        rotate([0, 90, 0])
+            cylinder(r = ssa_radius, h=ssa_depth, center=true);
     }
 }
 
@@ -155,20 +135,22 @@ module ssa_base() {
     }
 }
 
-module axle_notch(r) {
-    translate([-(axle_width/2), 0, 0])
-    rotate([0, 90, 0]) cylinder(h=axle_width, r=r, $fn=16);
+module axle_slot_neg() {
+    hull() {
+        translate([0, 0, 10]) axle();
+        translate([0, 0, uc_height+0.5]) axle();
+    }
 }
-
 
 module ssa_bracket() {
     difference() {
         union() {
             ssa_base();
             reflect_x() 
-                translate([body_width/2-ssa_depth/2, 0, uc_height/2])
+                translate([body_width/2-ssa_depth/2, 0, 0])
                     ssa();
         }
+        axle_slot_neg();
     }
 }
 
@@ -177,18 +159,21 @@ module back_bracket() {
     translate([0, -back_flat_length/2+fudge_incline_width-ssa_depth/2, 0]) {
         hull() {
             reflect_xyz()
-                translate([(back_flat_width/2-ssa_depth/2), back_flat_length/2+back_incline_length-ssa_depth/2, uc_height/2-ssa_depth/2]) 
+                translate([(back_flat_width/2-ssa_depth/2), back_flat_length/2+back_incline_length/2-ssa_depth/2, uc_height/2-ssa_depth/2]) 
                     sphere(r = ssa_depth/2);        
         }
     }
 }
 
+
 module car_bracket() {
-    //#debug_wheels();
+    #debug_wheels();
     ssa_bracket();
     uc_bracket();
     back_bracket();
 }
+
+
 
 module screw_mount_neg() {
     translate([0, -50, 0]) cube([100, 100, 100], center=true);
@@ -203,19 +188,18 @@ module screw_hole_neg() {
 
 // The part that attaches to the wall, where the screw goes.
 module wall_mount() {
-    translate([-.5, 0.5, 0])
-        difference() {
-            mink_it(0.5) {
-                hull() {
-                    translate([0, 0, screw_mount_height])
-                        rotate([90, 0, 0])
-                            cylinder(h = epsilon, r=back_flat_width/2+screw_mount_radius_fudge, center=true);
+    difference() {
+        mink_it(0.2) {
+            hull() {
+                translate([0, 0, screw_mount_height])
                     rotate([90, 0, 0])
-                        cylinder(h = epsilon, r=back_flat_width/2+screw_mount_radius_fudge, center=true);
-                }
+                        cylinder(h = screw_mount_depth, r=back_flat_width/2+screw_mount_radius_fudge, center=true);
+                rotate([90, 0, 0])
+                    cylinder(h = screw_mount_depth, r=back_flat_width/2+screw_mount_radius_fudge, center=true);
             }
-            translate(screw_hole_fudge) #screw_hole_neg();
         }
+        translate([0, -3, 5]) #screw_hole_neg();
+    }
 }
 
 // Used to cut off excess so it can lay flat on the printbed.
@@ -235,14 +219,9 @@ module wall_bracket() {
                     car_bracket();
             wall_mount();
         }
-        // Trim the bottom of the mount so it sits flush against the bed. 
+        // Trim the bottom of the mount so it sits flush. 
         rotate(car_bracket_rotation) flush_intersect();
-        // Trim the back so it sits flush against the wall.
-        translate([0, 50, 0]) cube([100, 100, 100], center = true);
     }
 }
 
-//ssa();
-//car_bracket();
 wall_bracket();
-//wall_mount();
